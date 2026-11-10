@@ -27,3 +27,16 @@ deploy: $(TARGET)
 	@echo "Deploying $(TARGET) to $(PI_USER)@$(PI_HOST):$(PI_DIR) ..."
 	scp $(TARGET) $(PI_USER)@$(PI_HOST):$(PI_DIR)/$(TARGET)
 	@echo "Deployment complete!"
+
+install: $(TARGET) uartecho.service
+	@echo "Copying binary to /usr/local/bin/ on TARGET..."
+	scp $(TARGET) $(PI_USER)@$(PI_HOST):/tmp/$(TARGET)
+	ssh -t $(PI_USER)@$(PI_HOST) "sudo mv /tmp/$(TARGET) /usr/local/bin/$(TARGET) && sudo chmod +x /usr/local/bin/$(TARGET)"
+	
+	@echo "Copying systemd unit file to /etc/systemd/system/..."
+	scp uartecho.service $(PI_USER)@$(PI_HOST):/tmp/uartecho.service
+	ssh -t $(PI_USER)@$(PI_HOST) "sudo mv /tmp/uartecho.service /etc/systemd/system/uartecho.service && sudo chown root:root /etc/systemd/system/uartecho.service"
+	
+	@echo "Reloading systemd, enabling and starting the service..."
+	ssh -t $(PI_USER)@$(PI_HOST) "sudo systemctl daemon-reload && sudo systemctl enable uartecho.service && sudo systemctl restart uartecho.service"
+	@echo "Installation completed successfully!"
