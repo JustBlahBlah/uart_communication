@@ -1,0 +1,16 @@
+[Unit]
+Description=UART Echo Daemon
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/mycom /dev/serial0
+WorkingDirectory=/var/log/
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=10
+User=root
+
+[Install]
+WantedBy=multi-user.target
